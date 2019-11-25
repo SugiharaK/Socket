@@ -1,0 +1,78 @@
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+#include "ros/ros.h"
+#include "std_msgs/String.h"
+#include "sensor_msgs/JointState.h"
+
+int joints_num = 6;
+double target_joints[6];
+sensor_msgs::JointState target;
+
+void chatterCallback(const sensor_msgs::JointState::ConstPtr &msg)
+{
+  target = *msg;
+  for (int i = 0; i < joints_num; i++)
+  {
+    target_joints[i] = target.position[i];
+  }
+  for (int i = 0; i < joints_num; i++)
+    std::cout << target_joints[i] << std::endl;
+}
+
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "joint_client");
+  ros::NodeHandle n;
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
+  ros::Subscriber sub = n.subscribe("/joint_states", 1000, chatterCallback);
+
+  int sockfd;
+  struct sockaddr_in addr;
+
+  // ソケット生成
+  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+  {
+    perror("socket");
+  }
+
+  // 送信先アドレス・ポート番号設定
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(1234);
+  addr.sin_addr.s_addr = inet_addr("192.168.0.247");
+  //addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+  // サーバ接続
+  connect(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+
+  // データ送信
+  double send_str[100];
+  double receive_str[100];
+  for (int i = 0; i < 5; i++)
+  {
+    ros::spinOnce();
+    for (int i = 0; i < 6; i++)
+      printf("send:%f\n", target_joints[i]);
+    if (send(sockfd, target_joints, 100, 0) < 0)
+    {
+      perror("send");
+    }
+    else
+    {
+      recv(sockfd, receive_str, 100, 0);
+      for (int i = 0; i < 6; i++)
+        printf("receive:%f\n", receive_str[i]);
+    }
+    sleep(1);
+  }
+
+  // ソケットクローズ
+  close(sockfd);
+
+  return 0;
+}
