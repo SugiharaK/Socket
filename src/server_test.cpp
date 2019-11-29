@@ -16,8 +16,15 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::AsyncSpinner spinner(1);
   spinner.start();
+
+  std::string robot_name = "vs087";
+  if (argc == 2)
+  {
+    robot_name = argv[1];
+  }
+
   //ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/twin/armR_controller/command", 1000);
-  ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/robot2/arm_controller2/command", 1000);
+  ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/" + robot_name + "/arm_controller/command", 1000);
   int sockfd;
   int client_sockfd;
   struct sockaddr_in addr;
@@ -69,12 +76,12 @@ int main(int argc, char **argv)
                                      "joint4",
                                      "joint5",
                                      "joint6"};*/
-  std::vector<std::string> joints = {"joint_2_1",
-                                     "joint_2_2",
-                                     "joint_2_3",
-                                     "joint_2_4",
-                                     "joint_2_5",
-                                     "joint_2_6"};
+  std::vector<std::string> joints = {"joint_1",
+                                     "joint_2",
+                                     "joint_3",
+                                     "joint_4",
+                                     "joint_5",
+                                     "joint_6"};
 
   for (int i = 0; i < 6; i++)
   {
