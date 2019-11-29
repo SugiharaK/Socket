@@ -12,6 +12,9 @@
 
 int main(int argc, char **argv)
 {
+  int joint_num = 6;
+  int finger_joint_num = 3;
+
   ros::init(argc, argv, "joint_server");
   ros::NodeHandle n;
   ros::AsyncSpinner spinner(1);
@@ -25,6 +28,7 @@ int main(int argc, char **argv)
 
   //ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/twin/armR_controller/command", 1000);
   ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/" + robot_name + "/arm_controller/command", 1000);
+  ros::Publisher fpub = n.advertise<trajectory_msgs::JointTrajectory>("/" + robot_name + "/gripper_controller/command", 1000);
   int sockfd;
   int client_sockfd;
   struct sockaddr_in addr;
@@ -69,36 +73,54 @@ int main(int argc, char **argv)
   // 受信
   int rsize;
   trajectory_msgs::JointTrajectory target;
+  trajectory_msgs::JointTrajectory finger_target;
   target.header.frame_id = "world";
+  finger_target.header.frame_id = "world";
   /*std::vector<std::string> joints = {"joint1",
                                      "joint2",
                                      "joint3",
                                      "joint4",
                                      "joint5",
                                      "joint6"};*/
-  std::vector<std::string> joints = {"joint_1",
-                                     "joint_2",
-                                     "joint_3",
-                                     "joint_4",
-                                     "joint_5",
-                                     "joint_6"};
+  std::vector<std::string> joints = {
+      "joint_1",
+      "joint_2",
+      "joint_3",
+      "joint_4",
+      "joint_5",
+      "joint_6",
+  };
+  std::vector<std::string> finger_joints = {"finger_R_joint", "finger_L_joint", "finger_3rd_joint"};
 
-  for (int i = 0; i < 6; i++)
+  for (int i = 0; i < joint_num; i++)
   {
     target.joint_names.push_back(joints[i]);
   }
+  for (int i = 0; i < finger_joint_num; i++)
+  {
+    finger_target.joint_names.push_back(finger_joints[i]);
+  }
+
   trajectory_msgs::JointTrajectoryPoint init_point;
   target.points.push_back(init_point);
+  finger_target.points.push_back(init_point);
   target.points[0].time_from_start = ros::Duration(0.01);
+  finger_target.points[0].time_from_start = ros::Duration(0.01);
 
   //initialaize
   rsize = recv(client_sockfd, buf, 100, 0);
-  for (int i = 0; i < 6; i++)
+  for (int i = 0; i < joint_num; i++)
   {
     target.points[0].positions.push_back(buf[i]);
     printf("receive:%f\n", buf[i]);
   }
-  for (int i = 0; i < 6; i++)
+  for (int i = joint_num; i < (joint_num + finger_joint_num); i++)
+  {
+    finger_target.points[0].positions.push_back(buf[i]);
+    printf("receive:%f\n", buf[i]);
+  }
+
+  for (int i = 0; i < (joint_num + finger_joint_num); i++)
   {
     printf("send:%f\n", buf[i]);
   }
@@ -118,18 +140,25 @@ int main(int argc, char **argv)
     }
     else
     {
-      for (int i = 0; i < 6; i++)
+      for (int i = 0; i < joint_num; i++)
+      {
+        target.points[0].positions[i] = buf[i];
+        printf("receive:%f\n", buf[i]);
+      }
+      for (int i = joint_num; i < (joint_num + finger_joint_num); i++)
       {
         target.points[0].positions[i] = buf[i];
         printf("receive:%f\n", buf[i]);
       }
 
       target.header.stamp = ros::Time::now();
+      finger_target.header.stamp = ros::Time::now();
       pub.publish(target);
+      fpub.publish(finger_target);
       ros::spinOnce();
 
       // 応答
-      for (int i = 0; i < 6; i++)
+      for (int i = 0; i < (joint_num + finger_joint_num); i++)
       {
         printf("send:%f\n", buf[i]);
       }
