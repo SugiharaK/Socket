@@ -36,7 +36,7 @@ int main(int argc, char **argv)
   socklen_t len = sizeof(struct sockaddr_in);
   struct sockaddr_in from_addr;
 
-  double buf[100];
+  double buf[10000];
 
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
   finger_target.points[0].time_from_start = ros::Duration(0.01);
 
   //initialaize
-  rsize = recv(client_sockfd, buf, 100, 0);
+  rsize = recv(client_sockfd, buf, 10000, 0);
   for (int i = 0; i < joint_num; i++)
   {
     target.points[0].positions.push_back(buf[i]);
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-    rsize = recv(client_sockfd, buf, 100, 0);
+    rsize = recv(client_sockfd, buf, 10000, 0);
 
     if (rsize == 0)
     {
@@ -147,7 +147,7 @@ int main(int argc, char **argv)
       }
       for (int i = joint_num; i < (joint_num + finger_joint_num); i++)
       {
-        target.points[0].positions[i] = buf[i];
+        finger_target.points[0].positions[i - joint_num] = buf[i];
         printf("receive:%f\n", buf[i]);
       }
 
