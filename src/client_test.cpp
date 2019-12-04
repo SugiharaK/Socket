@@ -51,23 +51,23 @@ int main(int argc, char **argv)
   connect(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 
   // データ送信
-  double send_str[10000];
-  double receive_str[10000];
+  double send_str[1000];
+  double receive_str[1000];
   while (ros::ok())
   {
     ros::spinOnce();
     for (int i = 0; i < joints_num; i++)
       printf("send:%f\n", target_joints[i]);
-    if (send(sockfd, target_joints, 10000, 0) < 0)
+    if (send(sockfd, target_joints, 1000, 0) < 0)
     {
       perror("send");
     }
-    else
+    /*else
     {
-      recv(sockfd, receive_str, 10000, 0);
+      recv(sockfd, receive_str, 1000, 0);
       for (int i = 0; i < joints_num; i++)
         printf("receive:%f\n", receive_str[i]);
-    }
+    }*/
   }
 
   // ソケットクローズ
