@@ -162,13 +162,13 @@ int main(int argc, char **argv)
       {
         printf("send:%f\n", buf[i]);
       }
-      write(client_sockfd, buf, rsize);
-    }*/
+      write(client_sockfd, buf, rsize);*/
     }
-
-    // ソケットクローズ
-    close(client_sockfd);
-    close(sockfd);
-
-    return 0;
   }
+
+  // ソケットクローズ
+  close(client_sockfd);
+  close(sockfd);
+
+  return 0;
+}
