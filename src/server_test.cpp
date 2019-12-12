@@ -20,11 +20,10 @@ int main(int argc, char **argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  std::string robot_name = "vs087";
-  if (argc == 2)
-  {
-    robot_name = argv[1];
-  }
+  std::string robot_name;
+  int port;
+  ros::param::param<std::string>("~robot_name", robot_name, "vs087");
+  ros::param::param<int>("~port", port, 1234);
 
   //ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/twin/armR_controller/command", 1000);
   ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/" + robot_name + "/arm_controller/command", 1000);
@@ -49,7 +48,7 @@ int main(int argc, char **argv)
 
   // 待ち受け用IP・ポート番号設定
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(1234);
+  addr.sin_port = htons(port);
   addr.sin_addr.s_addr = INADDR_ANY;
 
   // バインド

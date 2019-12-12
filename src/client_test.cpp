@@ -35,6 +35,9 @@ int main(int argc, char **argv)
   int sockfd;
   struct sockaddr_in addr;
 
+  int port;
+  ros::param::param<int>("~port", port, 1234);
+
   // ソケット生成
   if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
   {
@@ -43,7 +46,7 @@ int main(int argc, char **argv)
 
   // 送信先アドレス・ポート番号設定
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(1234);
+  addr.sin_port = htons(port);
   addr.sin_addr.s_addr = inet_addr("192.168.0.89");
   //addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
