@@ -26,19 +26,23 @@ int main(int argc, char **argv)
   ros::param::param<int>("~port", port, 1234);
 
   //ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/twin/armR_controller/command", 1000);
-  ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/" + robot_name + "/arm_controller/command", 1000);
-  ros::Publisher fpub = n.advertise<trajectory_msgs::JointTrajectory>("/" + robot_name + "/gripper_controller/command", 1000);
+  ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/vs087/arm_controller/command", 1000);
+  ros::Publisher fpub = n.advertise<trajectory_msgs::JointTrajectory>("/vs087/gripper_controller/command", 1000);
+  ros::Publisher pub2 = n.advertise<trajectory_msgs::JointTrajectory>("/robot2/arm_controller/command", 1000);
+  ros::Publisher fpub2 = n.advertise<trajectory_msgs::JointTrajectory>("/robot2/gripper_controller/command", 1000);
   int sockfd;
   int client_sockfd;
+  int client_sockfd2;
   struct sockaddr_in addr;
 
   socklen_t len = sizeof(struct sockaddr_in);
   struct sockaddr_in from_addr;
 
   double buf[10000];
-
+  double buf2[10000];
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
+  memset(buf2, 0, sizeof(buf2));
 
   // ソケット生成
   if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -61,17 +65,25 @@ int main(int argc, char **argv)
   {
     perror("listen");
   }
-
+  std::cout << "before accept" << std::endl;
   // クライアントからのコネクト要求待ち
   if ((client_sockfd = accept(sockfd, (struct sockaddr *)&from_addr, &len)) < 0)
   {
     perror("accept");
   }
+  std::cout << "accept1" << std::endl;
+  if ((client_sockfd2 = accept(sockfd, (struct sockaddr *)&from_addr, &len)) < 0)
+  {
+    perror("accept");
+  }
+  std::cout << "accept2" << std::endl;
 
   // 受信
   int rsize;
   trajectory_msgs::JointTrajectory target;
   trajectory_msgs::JointTrajectory finger_target;
+  trajectory_msgs::JointTrajectory target2;
+  trajectory_msgs::JointTrajectory finger_target2;
   target.header.frame_id = "world";
   finger_target.header.frame_id = "world";
   /*std::vector<std::string> joints = {"joint1",
@@ -123,6 +135,8 @@ int main(int argc, char **argv)
     printf("send:%f\n", buf[i]);
   }
   write(client_sockfd, buf, rsize);
+  target2 = target;
+  finger_target2 = finger_target;
 
   while (ros::ok())
   {
@@ -161,6 +175,43 @@ int main(int argc, char **argv)
         printf("send:%f\n", buf[i]);
       }
       write(client_sockfd, buf, rsize);*/
+    }
+    //robot2
+    rsize = recv(client_sockfd2, buf2, 10000, 0);
+
+    if (rsize == 0)
+    {
+      break;
+    }
+    else if (rsize == -1)
+    {
+      perror("recv");
+    }
+    else
+    {
+      for (int i = 0; i < joint_num; i++)
+      {
+        target2.points[0].positions[i] = buf2[i];
+        printf("receive2:%f\n", buf2[i]);
+      }
+      for (int i = joint_num; i < (joint_num + finger_joint_num); i++)
+      {
+        finger_target2.points[0].positions[i - joint_num] = buf2[i];
+        printf("receive2:%f\n", buf2[i]);
+      }
+
+      target2.header.stamp = ros::Time::now();
+      finger_target2.header.stamp = ros::Time::now();
+      pub2.publish(target2);
+      fpub2.publish(finger_target2);
+      ros::spinOnce();
+
+      // 応答
+      /*for (int i = 0; i < (joint_num + finger_joint_num); i++)
+      {
+        printf("send:%f\n", buf[i]);
+      }
+      write(client_sockfd, buf, rsize*/
     }
   }
 

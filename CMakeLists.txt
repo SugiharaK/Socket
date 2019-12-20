@@ -30,3 +30,6 @@ target_link_libraries(client_test ${catkin_LIBRARIES})
 
 add_executable(server_test src/server_test.cpp)
 target_link_libraries(server_test ${catkin_LIBRARIES})
+
+add_executable(server_twin src/server_twin.cpp)
+target_link_libraries(server_twin ${catkin_LIBRARIES})
