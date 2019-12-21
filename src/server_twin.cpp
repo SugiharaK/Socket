@@ -9,11 +9,25 @@
 #include "std_msgs/String.h"
 #include "trajectory_msgs/JointTrajectory.h"
 #include "trajectory_msgs/JointTrajectoryPoint.h"
+#include <geometry_msgs/Pose.h>
+
+bool judgeIentersected(double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy)
+{
+  double ta = (cx - dx) * (ay - cy) + (cy - dy) * (cx - ax);
+  double tb = (cx - dx) * (by - cy) + (cy - dy) * (cx - bx);
+  double tc = (ax - bx) * (cy - ay) + (ay - by) * (ax - cx);
+  double td = (ax - bx) * (dy - ay) + (ay - by) * (ax - dx);
+
+  return tc * td < 0 && ta * tb < 0;
+  // return tc * td <= 0 && ta * tb <= 0; // 端点を含む場合
+};
 
 int main(int argc, char **argv)
 {
   int joint_num = 6;
   int finger_joint_num = 3;
+  int pos_dimention = 3;
+  int move_frag = 0;
 
   ros::init(argc, argv, "joint_server");
   ros::NodeHandle n;
@@ -84,6 +98,10 @@ int main(int argc, char **argv)
   trajectory_msgs::JointTrajectory finger_target;
   trajectory_msgs::JointTrajectory target2;
   trajectory_msgs::JointTrajectory finger_target2;
+
+  geometry_msgs::Pose vs087_position;
+  geometry_msgs::Pose robot2_position;
+
   target.header.frame_id = "world";
   finger_target.header.frame_id = "world";
   /*std::vector<std::string> joints = {"joint1",
@@ -162,6 +180,13 @@ int main(int argc, char **argv)
         finger_target.points[0].positions[i - joint_num] = buf[i];
         printf("receive:%f\n", buf[i]);
       }
+      vs087_position.position.x = buf[joint_num + finger_joint_num];
+      vs087_position.position.y = buf[joint_num + finger_joint_num + 1];
+      vs087_position.position.z = buf[joint_num + finger_joint_num + 2];
+      for (int i = (joint_num + finger_joint_num); i < (joint_num + finger_joint_num + pos_dimention); i++)
+      {
+        printf("receive:%f\n", buf[i]);
+      }
 
       target.header.stamp = ros::Time::now();
       finger_target.header.stamp = ros::Time::now();
@@ -199,7 +224,13 @@ int main(int argc, char **argv)
         finger_target2.points[0].positions[i - joint_num] = buf2[i];
         printf("receive2:%f\n", buf2[i]);
       }
-
+      robot2_position.position.x = buf2[joint_num + finger_joint_num];
+      robot2_position.position.y = buf2[joint_num + finger_joint_num + 1];
+      robot2_position.position.z = buf2[joint_num + finger_joint_num + 2];
+      for (int i = (joint_num + finger_joint_num); i < (joint_num + finger_joint_num + pos_dimention); i++)
+      {
+        printf("receive2:%f\n", buf2[i]);
+      }
       target2.header.stamp = ros::Time::now();
       finger_target2.header.stamp = ros::Time::now();
       pub2.publish(target2);
@@ -211,7 +242,29 @@ int main(int argc, char **argv)
       {
         printf("send:%f\n", buf[i]);
       }
-      write(client_sockfd, buf, rsize*/
+      write(client_sockfd, buf, rsize);*/
+    }
+
+    //cross judge
+    if (judgeIentersected(0, 0, vs087_position.position.x, vs087_position.position.y, 0, 1, robot2_position.position.x, robot2_position.position.y))
+    {
+      write(client_sockfd, "true", rsize);
+      write(client_sockfd2, "true", rsize);
+      printf("ok\n");
+    }
+    else if (move_frag % 2 == 0)
+    {
+      write(client_sockfd, "true", rsize);
+      write(client_sockfd2, "false", rsize);
+      printf("cross:vs087\n");
+      move_frag++;
+    }
+    else
+    {
+      write(client_sockfd, "false", rsize);
+      write(client_sockfd2, "true", rsize);
+      printf("cross:robot2\n");
+      move_frag++;
     }
   }
 

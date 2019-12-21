@@ -11,7 +11,9 @@
 
 int joints_num = 9;
 double target_joints[9];
+int pos_dimention = 3;
 sensor_msgs::JointState target;
+geometry_msgs::Pose grasp_position;
 
 void Callback(const sensor_msgs::JointState::ConstPtr &msg)
 {
@@ -24,6 +26,15 @@ void Callback(const sensor_msgs::JointState::ConstPtr &msg)
   //std::cout << target_joints[i] << std::endl;
 }
 
+void Grasp_Callback(const geometry_msgs::Pose &msg)
+{
+  grasp_position = *msg;
+
+  target_joints[joints_num] = grasp_position.position.x;
+  target_joints[joints_num + 1] = grasp_position.position.y;
+  target_joints[joints_num + 2] = grasp_position.position.z;
+}
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "joint_client");
@@ -31,6 +42,7 @@ int main(int argc, char **argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
   ros::Subscriber sub = n.subscribe("/joint_states", 1000, Callback);
+  ros::Subscriber sub_p = n.subscribe("/vs087/grasp_position", 1000, Grasp_Callback);
 
   int sockfd;
   struct sockaddr_in addr;
@@ -59,18 +71,18 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
     ros::spinOnce();
-    for (int i = 0; i < joints_num; i++)
+    for (int i = 0; i < (joints_num + pos_dimention); i++)
       printf("send:%f\n", target_joints[i]);
     if (send(sockfd, target_joints, 10000, 0) < 0)
     {
       perror("send");
     }
-    /*else
+    else
     {
       recv(sockfd, receive_str, 1000, 0);
       for (int i = 0; i < joints_num; i++)
-        printf("receive:%f\n", receive_str[i]);
-    }*/
+        printf("receive:%s\n", receive_str[i]);
+    }
   }
 
   // ソケットクローズ
