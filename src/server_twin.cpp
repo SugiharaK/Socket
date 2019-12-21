@@ -4,12 +4,15 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "trajectory_msgs/JointTrajectory.h"
 #include "trajectory_msgs/JointTrajectoryPoint.h"
 #include <geometry_msgs/Pose.h>
+
+#define epsion 2.22045e-016
 
 bool judgeIentersected(double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy)
 {
@@ -135,6 +138,9 @@ int main(int argc, char **argv)
   target.points[0].time_from_start = ros::Duration(0.01);
   finger_target.points[0].time_from_start = ros::Duration(0.01);
 
+  target2 = target;
+  finger_target2 = finger_target;
+
   //initialaize
   rsize = recv(client_sockfd, buf, 10000, 0);
   for (int i = 0; i < joint_num; i++)
@@ -152,10 +158,33 @@ int main(int argc, char **argv)
   {
     printf("send:%f\n", buf[i]);
   }
+  std::cout << __LINE__ << std::endl;
   write(client_sockfd, buf, rsize);
-  target2 = target;
-  finger_target2 = finger_target;
+  std::cout << __LINE__ << std::endl;
+  rsize = recv(client_sockfd2, buf2, 10000, 0);
+  std::cout << __LINE__ << std::endl;
+  for (int i = 0; i < joint_num; i++)
+  {
+    std::cout << __LINE__ << std::endl;
+    target2.points[0].positions.push_back(buf2[i]);
+    std::cout << __LINE__ << std::endl;
+    printf("receive2:%f\n", buf[i]);
+    std::cout << __LINE__ << std::endl;
+  }
+  for (int i = joint_num; i < (joint_num + finger_joint_num); i++)
+  {
+    finger_target2.points[0].positions.push_back(buf2[i]);
+    printf("receive2:%f\n", buf2[i]);
+  }
 
+  for (int i = 0; i < (joint_num + finger_joint_num); i++)
+  {
+    printf("send2:%f\n", buf2[i]);
+  }
+  write(client_sockfd2, buf2, rsize);
+
+  //loop
+  std::cout << __LINE__ << std::endl;
   while (ros::ok())
   {
     rsize = recv(client_sockfd, buf, 10000, 0);
@@ -201,6 +230,7 @@ int main(int argc, char **argv)
       }
       write(client_sockfd, buf, rsize);*/
     }
+    std::cout << __LINE__ << std::endl;
     //robot2
     rsize = recv(client_sockfd2, buf2, 10000, 0);
 
@@ -246,25 +276,29 @@ int main(int argc, char **argv)
     }
 
     //cross judge
-    if (judgeIentersected(0, 0, vs087_position.position.x, vs087_position.position.y, 0, 1, robot2_position.position.x, robot2_position.position.y))
+    std::cout << __LINE__ << std::endl;
+    if (!(fabs(vs087_position.position.x) < epsion && fabs(vs087_position.position.y) < epsion) || !(fabs(robot2_position.position.x) < epsion && fabs(robot2_position.position.y) < epsion))
     {
-      write(client_sockfd, "true", rsize);
-      write(client_sockfd2, "true", rsize);
-      printf("ok\n");
-    }
-    else if (move_frag % 2 == 0)
-    {
-      write(client_sockfd, "true", rsize);
-      write(client_sockfd2, "false", rsize);
-      printf("cross:vs087\n");
-      move_frag++;
-    }
-    else
-    {
-      write(client_sockfd, "false", rsize);
-      write(client_sockfd2, "true", rsize);
-      printf("cross:robot2\n");
-      move_frag++;
+      if (judgeIentersected(0, 0, vs087_position.position.x, vs087_position.position.y, 0, 1, robot2_position.position.x, robot2_position.position.y))
+      {
+        write(client_sockfd, "true", 1000);
+        write(client_sockfd2, "true", 1000);
+        printf("ok\n");
+      }
+      else if (move_frag % 2 == 0)
+      {
+        write(client_sockfd, "true", 1000);
+        write(client_sockfd2, "false", 1000);
+        printf("cross:vs087\n");
+        move_frag++;
+      }
+      else
+      {
+        write(client_sockfd, "false", 1000);
+        write(client_sockfd2, "true", 1000);
+        printf("cross:robot2\n");
+        move_frag++;
+      }
     }
   }
 

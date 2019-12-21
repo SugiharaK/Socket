@@ -68,21 +68,27 @@ int main(int argc, char **argv)
 
   // データ送信
   double send_str[10000];
-  char receive_str[10000];
+  char receive_str[1000];
   while (ros::ok())
   {
+    std::cout << __LINE__ << std::endl;
     ros::spinOnce();
     for (int i = 0; i < (joints_num + pos_dimention); i++)
+    {
       printf("send:%f\n", target_joints[i]);
+    }
+
+    std::cout << __LINE__ << std::endl;
     if (send(sockfd, target_joints, 10000, 0) < 0)
     {
       perror("send");
     }
     else
     {
+      std::cout << __LINE__ << std::endl;
       recv(sockfd, receive_str, 1000, 0);
-      for (int i = 0; i < joints_num; i++)
-        printf("receive:%s\n", receive_str[i]);
+      std::cout << __LINE__ << std::endl;
+      printf("receive:%s\n", receive_str);
     }
   }
 
