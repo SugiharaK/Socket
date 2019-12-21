@@ -8,6 +8,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
+#include <geometry_msgs/Pose.h>
 
 int joints_num = 9;
 double target_joints[9];
@@ -26,7 +27,7 @@ void Callback(const sensor_msgs::JointState::ConstPtr &msg)
   //std::cout << target_joints[i] << std::endl;
 }
 
-void Grasp_Callback(const geometry_msgs::Pose &msg)
+void Grasp_Callback(const geometry_msgs::Pose::ConstPtr &msg)
 {
   grasp_position = *msg;
 
@@ -67,7 +68,7 @@ int main(int argc, char **argv)
 
   // データ送信
   double send_str[10000];
-  double receive_str[10000];
+  char receive_str[10000];
   while (ros::ok())
   {
     ros::spinOnce();
