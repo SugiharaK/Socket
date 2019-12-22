@@ -87,6 +87,7 @@ int main(int argc, char **argv)
     {
       recv(sockfd, receive_str, 1000, 0);
       printf("receive:%s\n", receive_str);
+      move_permission.data = receive_str;
       pub.publish(move_permission);
     }
   }
