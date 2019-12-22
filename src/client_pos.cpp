@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "ros/ros.h"
 #include "std_msgs/String.h"
@@ -44,7 +45,7 @@ int main(int argc, char **argv)
   spinner.start();
   ros::Subscriber sub = n.subscribe("/joint_states", 1000, Callback);
   ros::Subscriber sub_p = n.subscribe("/vs087/grasp_position", 1000, Grasp_Callback);
-
+  ros::Publisher pub = n.advertise<std_msgs::String>("/vs087/move_permission", 1000);
   int sockfd;
   struct sockaddr_in addr;
 
@@ -69,26 +70,24 @@ int main(int argc, char **argv)
   // データ送信
   double send_str[10000];
   char receive_str[1000];
+  std_msgs::String move_permission;
   while (ros::ok())
   {
-    std::cout << __LINE__ << std::endl;
     ros::spinOnce();
     for (int i = 0; i < (joints_num + pos_dimention); i++)
     {
       printf("send:%f\n", target_joints[i]);
     }
 
-    std::cout << __LINE__ << std::endl;
     if (send(sockfd, target_joints, 10000, 0) < 0)
     {
       perror("send");
     }
     else
     {
-      std::cout << __LINE__ << std::endl;
       recv(sockfd, receive_str, 1000, 0);
-      std::cout << __LINE__ << std::endl;
       printf("receive:%s\n", receive_str);
+      pub.publish(move_permission);
     }
   }
 

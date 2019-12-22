@@ -13,6 +13,7 @@
 #include <geometry_msgs/Pose.h>
 
 #define epsion 2.22045e-016
+#define gripper_length 0.18
 
 bool judgeIentersected(double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy)
 {
@@ -23,7 +24,13 @@ bool judgeIentersected(double ax, double ay, double bx, double by, double cx, do
 
   return tc * td < 0 && ta * tb < 0;
   // return tc * td <= 0 && ta * tb <= 0; // 端点を含む場合
-};
+}
+double getDistance(double x, double y, double x2, double y2)
+{
+  double distance = sqrt((x2 - x) * (x2 - x) + (y2 - y) * (y2 - y));
+
+  return distance;
+}
 
 int main(int argc, char **argv)
 {
@@ -158,18 +165,16 @@ int main(int argc, char **argv)
   {
     printf("send:%f\n", buf[i]);
   }
-  std::cout << __LINE__ << std::endl;
+
   write(client_sockfd, buf, rsize);
-  std::cout << __LINE__ << std::endl;
+
   rsize = recv(client_sockfd2, buf2, 10000, 0);
-  std::cout << __LINE__ << std::endl;
+
   for (int i = 0; i < joint_num; i++)
   {
-    std::cout << __LINE__ << std::endl;
     target2.points[0].positions.push_back(buf2[i]);
-    std::cout << __LINE__ << std::endl;
+
     printf("receive2:%f\n", buf[i]);
-    std::cout << __LINE__ << std::endl;
   }
   for (int i = joint_num; i < (joint_num + finger_joint_num); i++)
   {
@@ -184,7 +189,6 @@ int main(int argc, char **argv)
   write(client_sockfd2, buf2, rsize);
 
   //loop
-  std::cout << __LINE__ << std::endl;
   while (ros::ok())
   {
     rsize = recv(client_sockfd, buf, 10000, 0);
@@ -230,7 +234,7 @@ int main(int argc, char **argv)
       }
       write(client_sockfd, buf, rsize);*/
     }
-    std::cout << __LINE__ << std::endl;
+
     //robot2
     rsize = recv(client_sockfd2, buf2, 10000, 0);
 
@@ -276,30 +280,32 @@ int main(int argc, char **argv)
     }
 
     //cross judge
-    std::cout << __LINE__ << std::endl;
-    if (!(fabs(vs087_position.position.x) < epsion && fabs(vs087_position.position.y) < epsion) || !(fabs(robot2_position.position.x) < epsion && fabs(robot2_position.position.y) < epsion))
+    int crs_judge = judgeIentersected(0.0, 0.0, vs087_position.position.x, vs087_position.position.y, 0.0, 1.0, robot2_position.position.x, robot2_position.position.y + 1.0);
+    double dist = getDistance(vs087_position.position.x, vs087_position.position.y, robot2_position.position.x, robot2_position.position.y + 1.0);
+    //if (!(fabs(vs087_position.position.x) < epsion && fabs(vs087_position.position.y) < epsion) || !(fabs(robot2_position.position.x) < epsion && fabs(robot2_position.position.y) < epsion))
+    //{
+    printf("judge:%d,%f\n", !crs_judge, dist);
+    if (!crs_judge && (dist > gripper_length))
     {
-      if (judgeIentersected(0, 0, vs087_position.position.x, vs087_position.position.y, 0, 1, robot2_position.position.x, robot2_position.position.y))
-      {
-        write(client_sockfd, "true", 1000);
-        write(client_sockfd2, "true", 1000);
-        printf("ok\n");
-      }
-      else if (move_frag % 2 == 0)
-      {
-        write(client_sockfd, "true", 1000);
-        write(client_sockfd2, "false", 1000);
-        printf("cross:vs087\n");
-        move_frag++;
-      }
-      else
-      {
-        write(client_sockfd, "false", 1000);
-        write(client_sockfd2, "true", 1000);
-        printf("cross:robot2\n");
-        move_frag++;
-      }
+      write(client_sockfd, "true", 1000);
+      write(client_sockfd2, "true", 1000);
+      printf("ok\n");
     }
+    else if (move_frag % 2 == 0)
+    {
+      write(client_sockfd, "true", 1000);
+      write(client_sockfd2, "false", 1000);
+      printf("cross:vs087\n");
+      move_frag++;
+    }
+    else
+    {
+      write(client_sockfd, "false", 1000);
+      write(client_sockfd2, "true", 1000);
+      printf("cross:robot2\n");
+      move_frag++;
+    }
+    //}
   }
 
   // ソケットクローズ
