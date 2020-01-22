@@ -34,5 +34,14 @@ target_link_libraries(server_test ${catkin_LIBRARIES})
 add_executable(server_twin src/server_twin.cpp)
 target_link_libraries(server_twin ${catkin_LIBRARIES})
 
+add_executable(server_twin_cross src/server_twin_cross.cpp)
+target_link_libraries(server_twin_cross ${catkin_LIBRARIES})
+
 add_executable(client_pos src/client_pos.cpp)
 target_link_libraries(client_pos ${catkin_LIBRARIES})
+
+add_executable(server_point_cloud src/server_point_cloud.cpp)
+target_link_libraries(server_point_cloud ${catkin_LIBRARIES})
+
+add_executable(client_point_cloud src/client_point_cloud.cpp)
+target_link_libraries(client_point_cloud ${catkin_LIBRARIES})

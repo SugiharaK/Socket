@@ -117,13 +117,13 @@ int main(int argc, char **argv)
     finger_target.points[0].positions.push_back(buf[i]);
     printf("receive:%f\n", buf[i]);
   }
-
+  /*
   for (int i = 0; i < (joint_num + finger_joint_num); i++)
   {
     printf("send:%f\n", buf[i]);
   }
   write(client_sockfd, buf, rsize);
-
+*/
   while (ros::ok())
   {
     rsize = recv(client_sockfd, buf, 10000, 0);
