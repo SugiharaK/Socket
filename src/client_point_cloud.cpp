@@ -14,17 +14,20 @@ int joints_num = 9;
 double target_joints[9];
 sensor_msgs::JointState target;
 sensor_msgs::PointCloud2 pc;
-int point_cloud[10000];
+int point_cloud[100000];
 int points_num;
+int width;
 
 void Callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
   pc = *msg;
   points_num = pc.row_step;
+  width = pc.width;
   point_cloud[0] = points_num;
-  for (int i = 1; i < points_num + 1; i++)
+  point_cloud[1] = width;
+  for (int i = 2; i < points_num + 2; i++)
   {
-    point_cloud[i] = pc.data[i - 1];
+    point_cloud[i] = pc.data[i - 2];
   }
   printf("callback:%d\n", point_cloud[1]);
   //for (int i = 0; i < joints_num; i++)
@@ -62,7 +65,7 @@ int main(int argc, char **argv)
 
   // データ送信
   double send_str[10000];
-  double receive_str[10000];
+  int receive_str[100000];
   while (ros::ok())
   {
     ros::spinOnce();
@@ -73,16 +76,17 @@ int main(int argc, char **argv)
     }
     printf("\n");
 
-    if (send(sockfd, point_cloud, 1000000000, 0) < 0)
+    if (send(sockfd, point_cloud, 100000, 0) < 0)
     {
       perror("send");
     }
-    /*else
+    /* else
     {
-      recv(sockfd, receive_str, 1000, 0);
-      for (int i = 0; i < joints_num; i++)
-        printf("receive:%f\n", receive_str[i]);
-    }*/
+      recv(sockfd, receive_str, 1000000000, 0);
+      for (int i = 0; i < 5; i++)
+        printf("receive:%d", receive_str[i]);
+    }
+    printf("\n");*/
   }
 
   // ソケットクローズ

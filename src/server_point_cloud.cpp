@@ -17,7 +17,7 @@ int main(int argc, char **argv)
   int joint_num = 6;
   int finger_joint_num = 3;
 
-  ros::init(argc, argv, "joint_server");
+  ros::init(argc, argv, "pointcloud_server");
   ros::NodeHandle n;
   ros::AsyncSpinner spinner(1);
   spinner.start();
@@ -27,9 +27,6 @@ int main(int argc, char **argv)
   ros::param::param<std::string>("~robot_name", robot_name, "vs087");
   ros::param::param<int>("~port", port, 1234);
 
-  //ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/twin/armR_controller/command", 1000);
-  ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/" + robot_name + "/arm_controller/command", 1000);
-  ros::Publisher fpub = n.advertise<trajectory_msgs::JointTrajectory>("/" + robot_name + "/gripper_controller/command", 1000);
   ros::Publisher pubpc = n.advertise<sensor_msgs::PointCloud2>("/socket_pc", 10000);
   int sockfd;
   int client_sockfd;
@@ -76,7 +73,9 @@ int main(int argc, char **argv)
   sensor_msgs::PointCloud2 point_cloud;
   sensor_msgs::PointCloud2 init_cloud;
   sensor_msgs::PointField init_field;
-  point_cloud.fields.push_back(init_field);
+
+  //initialaize
+  /**/ point_cloud.fields.push_back(init_field);
   point_cloud.fields.push_back(init_field);
   point_cloud.fields.push_back(init_field);
   std::cout << __LINE__ << std::endl;
@@ -98,54 +97,13 @@ int main(int argc, char **argv)
 
   point_cloud.header.frame_id = "world";
   point_cloud.point_step = 16;
-  /*std::vector<std::string> joints = {
-      "joint_1",
-      "joint_2",
-      "joint_3",
-      "joint_4",
-      "joint_5",
-      "joint_6",
-  };
-  std::vector<std::string> finger_joints = {"finger_R_joint", "finger_L_joint", "finger_3rd_joint"};
+  point_cloud.height = 1;
+  point_cloud.is_dense = 1;
 
-  for (int i = 0; i < joint_num; i++)
-  {
-    target.joint_names.push_back(joints[i]);
-  }
-  for (int i = 0; i < finger_joint_num; i++)
-  {
-    finger_target.joint_names.push_back(finger_joints[i]);
-  }
-
-  trajectory_msgs::JointTrajectoryPoint init_point;
-  target.points.push_back(init_point);
-  finger_target.points.push_back(init_point);
-  target.points[0].time_from_start = ros::Duration(0.01);
-  finger_target.points[0].time_from_start = ros::Duration(0.01);
- */
-  //initialaize
-  /*rsize = recv(client_sockfd, buf, 10000, 0);
-  for (int i = 0; i < joint_num; i++)
-  {
-    target.points[0].positions.push_back(buf[i]);
-    printf("receive:%f\n", buf[i]);
-  }
-  for (int i = joint_num; i < (joint_num + finger_joint_num); i++)
-  {
-    finger_target.points[0].positions.push_back(buf[i]);
-    printf("receive:%f\n", buf[i]);
-  }
-  /*
-  for (int i = 0; i < (joint_num + finger_joint_num); i++)
-  {
-    printf("send:%f\n", buf[i]);
-  }
-  write(client_sockfd, buf, rsize);
-  */
   std::cout << __LINE__ << std::endl;
   while (ros::ok())
   {
-    rsize = recv(client_sockfd, buf, 1000000000, 0);
+    rsize = recv(client_sockfd, buf, 100000, 0);
 
     if (rsize == 0)
     {
@@ -157,25 +115,11 @@ int main(int argc, char **argv)
     }
     else
     {
-      /*for (int i = 0; i < joint_num; i++)
-      {
-        target.points[0].positions[i] = buf[i];
-        printf("receive:%f\n", buf[i]);
-      }
-      for (int i = joint_num; i < (joint_num + finger_joint_num); i++)
-      {
-        finger_target.points[0].positions[i - joint_num] = buf[i];
-        printf("receive:%f\n", buf[i]);
-      }
-
-      target.header.stamp = ros::Time::now();
-      finger_target.header.stamp = ros::Time::now();
-      pub.publish(target);
-      fpub.publish(finger_target);*/
       point_cloud.data = init_cloud.data;
       int bufsize = buf[0];
+      int width = buf[1];
       printf("size:%d\n", bufsize);
-      for (int i = 1; i < bufsize + 1; i++)
+      for (int i = 2; i < bufsize + 2; i++)
       {
         point_cloud.data.push_back(buf[i]);
         //printf("receive:%d\n", buf[i]);
@@ -183,15 +127,17 @@ int main(int argc, char **argv)
       printf("receive:%d\n", buf[1]);
       point_cloud.header.stamp = ros::Time::now();
       point_cloud.row_step = bufsize;
+      point_cloud.width = width;
       pubpc.publish(point_cloud);
       ros::spinOnce();
 
       // 応答
-      /*for (int i = 0; i < (joint_num + finger_joint_num); i++)
+      /* for (int i = 0; i < 5; i++)
       {
-        printf("send:%f\n", buf[i]);
+        printf("send:%d", buf[i]);
       }
-      write(client_sockfd, buf, rsize);*/
+      printf("\n");
+      write(client_sockfd, buf, 1000000000);*/
     }
   }
 
