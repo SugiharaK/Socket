@@ -236,7 +236,6 @@ int main(int argc, char **argv)
       printf("pc_send:%d", point_cloud[i]);
     }
     printf("\n");
-    int msg_len = points_num * 2;
     if (send(client_sockfd, point_cloud, 30000, 0) < 0)
     {
       perror("send");
@@ -285,7 +284,6 @@ int main(int argc, char **argv)
       printf("pc_send2:%d", point_cloud[i]);
     }
     printf("\n");
-    int msg_len = points_num * 2;
     if (send(client_sockfd2, point_cloud, 30000, 0) < 0)
     {
       perror("send");
