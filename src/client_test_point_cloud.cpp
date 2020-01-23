@@ -11,7 +11,9 @@
 #include "sensor_msgs/PointCloud2.h"
 #include "sensor_msgs/PointField.h"
 
-int joint_num = 6 int finger_num = 3 int joints_num = 9;
+int joint_num = 6;
+int finger_num = 3;
+int joints_num = 9;
 double target_joints[9];
 sensor_msgs::JointState target;
 
