@@ -54,8 +54,6 @@ int main(int argc, char **argv)
   connect(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 
   // データ送信
-  double send_str[10000];
-  double receive_str[10000];
   while (ros::ok())
   {
     ros::spinOnce();

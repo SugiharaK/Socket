@@ -49,7 +49,6 @@ int main(int argc, char **argv)
   ros::param::param<std::string>("~robot_name", robot_name, "vs087");
   ros::param::param<int>("~port", port, 1234);
 
-  ros::Publisher pubpc = n.advertise<sensor_msgs::PointCloud2>("/socket_pc", 10000);
   int sockfd;
   int client_sockfd;
   struct sockaddr_in addr;
@@ -91,8 +90,6 @@ int main(int argc, char **argv)
   }
   std::cout << __LINE__ << std::endl;
   // データ送信
-  double send_str[10000];
-  int receive_str[100000];
   while (ros::ok())
   {
     ros::spinOnce();
@@ -102,8 +99,8 @@ int main(int argc, char **argv)
       printf("send:%d", point_cloud[i]);
     }
     printf("\n");
-
-    if (send(client_sockfd, point_cloud, 100000, 0) < 0)
+    int msg_len = points_num * 2;
+    if (send(client_sockfd, point_cloud, 30000, 0) < 0)
     {
       perror("send");
     }
