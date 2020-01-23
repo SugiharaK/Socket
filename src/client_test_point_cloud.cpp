@@ -95,6 +95,13 @@ int main(int argc, char **argv)
   point_cloud.is_dense = 1;
 
   std::cout << __LINE__ << std::endl;
+  ros::spinOnce();
+  for (int i = 0; i < joints_num; i++)
+    printf("send:%f\n", target_joints[i]);
+  if (send(sockfd, target_joints, 10000, 0) < 0)
+  {
+    perror("send");
+  }
   while (ros::ok())
   {
     //joint

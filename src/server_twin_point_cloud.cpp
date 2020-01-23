@@ -64,8 +64,9 @@ int main(int argc, char **argv)
   socklen_t len = sizeof(struct sockaddr_in);
   struct sockaddr_in from_addr;
 
-  double buf[1000000];
-  double buf2[1000000];
+  double buf[10000];
+  double buf2[10000];
+
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
   memset(buf2, 0, sizeof(buf2));
