@@ -12,6 +12,27 @@
 #include "sensor_msgs/PointCloud2.h"
 #include "sensor_msgs/PointField.h"
 
+sensor_msgs::PointCloud2 pc;
+int point_cloud[100000];
+int points_num;
+int width;
+
+void Callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
+{
+  pc = *msg;
+  points_num = pc.row_step;
+  width = pc.width;
+  point_cloud[0] = points_num;
+  point_cloud[1] = width;
+  for (int i = 2; i < points_num + 2; i++)
+  {
+    point_cloud[i] = pc.data[i - 2];
+  }
+  printf("callback:%d\n", point_cloud[1]);
+  //for (int i = 0; i < joints_num; i++)
+  //std::cout << target_joints[i] << std::endl;
+}
+
 int main(int argc, char **argv)
 {
   int joint_num = 6;
@@ -21,6 +42,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::AsyncSpinner spinner(1);
   spinner.start();
+  ros::Subscriber sub = n.subscribe("/downsampled_cloud", 1000, Callback);
 
   std::string robot_name;
   int port;
@@ -68,77 +90,30 @@ int main(int argc, char **argv)
     perror("accept");
   }
   std::cout << __LINE__ << std::endl;
-  // 受信
-  int rsize;
-  sensor_msgs::PointCloud2 point_cloud;
-  sensor_msgs::PointCloud2 init_cloud;
-  sensor_msgs::PointField init_field;
-
-  //initialaize
-  /**/ point_cloud.fields.push_back(init_field);
-  point_cloud.fields.push_back(init_field);
-  point_cloud.fields.push_back(init_field);
-  std::cout << __LINE__ << std::endl;
-  init_field.offset = 0;
-  init_field.name = "x";
-  init_field.datatype = 7;
-  init_field.count = 1;
-  std::cout << __LINE__ << std::endl;
-  point_cloud.fields[0] = init_field;
-  std::cout << __LINE__ << std::endl;
-  init_field.offset = 4;
-  init_field.name = "y";
-  point_cloud.fields[1] = init_field;
-  std::cout << __LINE__ << std::endl;
-  init_field.offset = 8;
-  init_field.name = "z";
-  point_cloud.fields[2] = init_field;
-  std::cout << __LINE__ << std::endl;
-
-  point_cloud.header.frame_id = "world";
-  point_cloud.point_step = 16;
-  point_cloud.height = 1;
-  point_cloud.is_dense = 1;
-
-  std::cout << __LINE__ << std::endl;
+  // データ送信
+  double send_str[10000];
+  int receive_str[100000];
   while (ros::ok())
   {
-    rsize = recv(client_sockfd, buf, 100000, 0);
+    ros::spinOnce();
+    printf("pc_num:%d\n", points_num);
+    for (int i = 0; i < 5; i++)
+    {
+      printf("send:%d", point_cloud[i]);
+    }
+    printf("\n");
 
-    if (rsize == 0)
+    if (send(client_sockfd, point_cloud, 100000, 0) < 0)
     {
-      break;
+      perror("send");
     }
-    else if (rsize == -1)
+    /* else
     {
-      perror("recv");
+      recv(sockfd, receive_str, 1000000000, 0);
+      for (int i = 0; i < 5; i++)
+        printf("receive:%d", receive_str[i]);
     }
-    else
-    {
-      point_cloud.data = init_cloud.data;
-      int bufsize = buf[0];
-      int width = buf[1];
-      printf("size:%d\n", bufsize);
-      for (int i = 2; i < bufsize + 2; i++)
-      {
-        point_cloud.data.push_back(buf[i]);
-        //printf("receive:%d\n", buf[i]);
-      }
-      printf("receive:%d\n", buf[1]);
-      point_cloud.header.stamp = ros::Time::now();
-      point_cloud.row_step = bufsize;
-      point_cloud.width = width;
-      pubpc.publish(point_cloud);
-      ros::spinOnce();
-
-      // 応答
-      /* for (int i = 0; i < 5; i++)
-      {
-        printf("send:%d", buf[i]);
-      }
-      printf("\n");
-      write(client_sockfd, buf, 1000000000);*/
-    }
+    printf("\n");*/
   }
 
   // ソケットクローズ

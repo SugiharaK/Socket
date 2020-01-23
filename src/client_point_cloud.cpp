@@ -9,39 +9,15 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/JointState.h"
 #include "sensor_msgs/PointCloud2.h"
-
-int joints_num = 9;
-double target_joints[9];
-sensor_msgs::JointState target;
-sensor_msgs::PointCloud2 pc;
-int point_cloud[100000];
-int points_num;
-int width;
-
-void Callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
-{
-  pc = *msg;
-  points_num = pc.row_step;
-  width = pc.width;
-  point_cloud[0] = points_num;
-  point_cloud[1] = width;
-  for (int i = 2; i < points_num + 2; i++)
-  {
-    point_cloud[i] = pc.data[i - 2];
-  }
-  printf("callback:%d\n", point_cloud[1]);
-  //for (int i = 0; i < joints_num; i++)
-  //std::cout << target_joints[i] << std::endl;
-}
+#include "sensor_msgs/PointField.h"
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "joint_client");
+  ros::init(argc, argv, "pointcloud_client");
   ros::NodeHandle n;
   ros::AsyncSpinner spinner(1);
   spinner.start();
-  ros::Subscriber sub = n.subscribe("/downsampled_cloud", 1000, Callback);
-
+  ros::Publisher pubpc = n.advertise<sensor_msgs::PointCloud2>("/socket_pc", 10000);
   int sockfd;
   struct sockaddr_in addr;
 
@@ -63,30 +39,83 @@ int main(int argc, char **argv)
   // サーバ接続
   connect(sockfd, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 
-  // データ送信
-  double send_str[10000];
-  int receive_str[100000];
+  // 受信
+  int rsize;
+  sensor_msgs::PointCloud2 point_cloud;
+  sensor_msgs::PointCloud2 init_cloud;
+  sensor_msgs::PointField init_field;
+
+  //initialaize
+  std::cout << __LINE__ << std::endl;
+  int buf[1000000];
+  std::cout << __LINE__ << std::endl;
+  // 受信バッファ初期化
+  memset(buf, 0, sizeof(buf));
+
+  /**/ point_cloud.fields.push_back(init_field);
+  point_cloud.fields.push_back(init_field);
+  point_cloud.fields.push_back(init_field);
+  std::cout << __LINE__ << std::endl;
+  init_field.offset = 0;
+  init_field.name = "x";
+  init_field.datatype = 7;
+  init_field.count = 1;
+  std::cout << __LINE__ << std::endl;
+  point_cloud.fields[0] = init_field;
+  std::cout << __LINE__ << std::endl;
+  init_field.offset = 4;
+  init_field.name = "y";
+  point_cloud.fields[1] = init_field;
+  std::cout << __LINE__ << std::endl;
+  init_field.offset = 8;
+  init_field.name = "z";
+  point_cloud.fields[2] = init_field;
+  std::cout << __LINE__ << std::endl;
+
+  point_cloud.header.frame_id = "world";
+  point_cloud.point_step = 16;
+  point_cloud.height = 1;
+  point_cloud.is_dense = 1;
+
+  std::cout << __LINE__ << std::endl;
   while (ros::ok())
   {
-    ros::spinOnce();
-    printf("pc_num:%d\n", points_num);
-    for (int i = 0; i < 5; i++)
-    {
-      printf("send:%d", point_cloud[i]);
-    }
-    printf("\n");
+    rsize = recv(sockfd, buf, 100000, 0);
 
-    if (send(sockfd, point_cloud, 100000, 0) < 0)
+    if (rsize == 0)
     {
-      perror("send");
+      break;
     }
-    /* else
+    else if (rsize == -1)
     {
-      recv(sockfd, receive_str, 1000000000, 0);
-      for (int i = 0; i < 5; i++)
-        printf("receive:%d", receive_str[i]);
+      perror("recv");
     }
-    printf("\n");*/
+    else
+    {
+      point_cloud.data = init_cloud.data;
+      int bufsize = buf[0];
+      int width = buf[1];
+      printf("size:%d\n", bufsize);
+      for (int i = 2; i < bufsize + 2; i++)
+      {
+        point_cloud.data.push_back(buf[i]);
+        //printf("receive:%d\n", buf[i]);
+      }
+      printf("receive:%d\n", buf[1]);
+      point_cloud.header.stamp = ros::Time::now();
+      point_cloud.row_step = bufsize;
+      point_cloud.width = width;
+      pubpc.publish(point_cloud);
+      ros::spinOnce();
+
+      // 応答
+      /* for (int i = 0; i < 5; i++)
+      {
+        printf("send:%d", buf[i]);
+      }
+      printf("\n");
+      write(client_sockfd, buf, 1000000000);*/
+    }
   }
 
   // ソケットクローズ
