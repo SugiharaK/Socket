@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   std::cout << __LINE__ << std::endl;
   while (ros::ok())
   {
-    rsize = recv(sockfd, buf, 100000, 0);
+    rsize = recv(sockfd, buf, 30000, 0);
 
     if (rsize == 0)
     {

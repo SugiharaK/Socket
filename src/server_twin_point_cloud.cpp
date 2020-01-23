@@ -152,16 +152,16 @@ int main(int argc, char **argv)
   finger_target2 = finger_target;
 
   //initialaize
-  rsize = recv(client_sockfd, buf, 10000, 0);
+  //rsize = recv(client_sockfd, buf, 10000, 0);
   for (int i = 0; i < joint_num; i++)
   {
-    target.points[0].positions.push_back(buf[i]);
-    printf("receive:%f\n", buf[i]);
+    target.points[0].positions.push_back(0.0);
+    //printf("receive:%f\n", buf[i]);
   }
   for (int i = joint_num; i < (joint_num + finger_joint_num); i++)
   {
-    finger_target.points[0].positions.push_back(buf[i]);
-    printf("receive:%f\n", buf[i]);
+    finger_target.points[0].positions.push_back(0.0);
+    //printf("receive:%f\n", buf[i]);
   }
 
   /*for (int i = 0; i < (joint_num + finger_joint_num); i++)
@@ -170,18 +170,18 @@ int main(int argc, char **argv)
   }
   write(client_sockfd, buf, rsize);*/
 
-  rsize = recv(client_sockfd2, buf2, 10000, 0);
+  //rsize = recv(client_sockfd2, buf2, 10000, 0);
 
   for (int i = 0; i < joint_num; i++)
   {
-    target2.points[0].positions.push_back(buf2[i]);
+    target2.points[0].positions.push_back(0.0);
 
-    printf("receive2:%f\n", buf[i]);
+    //printf("receive2:%f\n", buf[i]);
   }
   for (int i = joint_num; i < (joint_num + finger_joint_num); i++)
   {
-    finger_target2.points[0].positions.push_back(buf2[i]);
-    printf("receive2:%f\n", buf2[i]);
+    finger_target2.points[0].positions.push_back(0.0);
+    //printf("receive2:%f\n", buf2[i]);
   }
 
   /*for (int i = 0; i < (joint_num + finger_joint_num); i++)
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
     printf("send2:%f\n", buf2[i]);
   }
   write(client_sockfd2, buf2, rsize);*/
-
+  std::cout << "initial end" << std::endl;
   //loop
   while (ros::ok())
   {

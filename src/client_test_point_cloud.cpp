@@ -11,7 +11,7 @@
 #include "sensor_msgs/PointCloud2.h"
 #include "sensor_msgs/PointField.h"
 
-int joints_num = 9;
+int joint_num = 6 int finger_num = 3 int joints_num = 9;
 double target_joints[9];
 sensor_msgs::JointState target;
 
@@ -20,7 +20,11 @@ void Callback(const sensor_msgs::JointState::ConstPtr &msg)
   target = *msg;
   for (int i = 0; i < joints_num; i++)
   {
-    target_joints[i] = target.position[i];
+    target_joints[i] = target.position[i + finger_num];
+  }
+  for (int i = 0; i < finger_num; i++)
+  {
+    target_joints[i + joint_num] = target.position[i];
   }
   //for (int i = 0; i < joints_num; i++)
   //std::cout << target_joints[i] << std::endl;
@@ -95,13 +99,6 @@ int main(int argc, char **argv)
   point_cloud.is_dense = 1;
 
   std::cout << __LINE__ << std::endl;
-  ros::spinOnce();
-  for (int i = 0; i < joints_num; i++)
-    printf("send:%f\n", target_joints[i]);
-  if (send(sockfd, target_joints, 10000, 0) < 0)
-  {
-    perror("send");
-  }
   while (ros::ok())
   {
     //joint
@@ -113,7 +110,7 @@ int main(int argc, char **argv)
       perror("send");
     }
     //point_cloud
-    rsize = recv(sockfd, buf, 100000, 0);
+    rsize = recv(sockfd, buf, 30000, 0);
 
     if (rsize == 0)
     {
