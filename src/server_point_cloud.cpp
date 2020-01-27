@@ -116,6 +116,7 @@ int main(int argc, char **argv)
     {
       perror("send");
     }
+    delete[] msg_len;
     sleep(0.2);
     /* else
     {

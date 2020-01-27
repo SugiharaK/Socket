@@ -17,6 +17,7 @@ sensor_msgs::PointCloud2 pc;
 int point_cloud[100000];
 int points_num;
 int width;
+int *send_cloud;
 
 void Callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
@@ -64,8 +65,9 @@ int main(int argc, char **argv)
   socklen_t len = sizeof(struct sockaddr_in);
   struct sockaddr_in from_addr;
 
-  double buf[10000];
-  double buf2[10000];
+  double buf[9];
+  double buf2[9];
+  int joint_msg_len = 9 * 8;
 
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
@@ -194,7 +196,7 @@ int main(int argc, char **argv)
   while (ros::ok())
   {
     //robot1
-    rsize = recv(client_sockfd, buf, 10000, 0);
+    rsize = recv(client_sockfd, buf, joint_msg_len, 0);
 
     if (rsize == 0)
     {
@@ -237,13 +239,25 @@ int main(int argc, char **argv)
       printf("pc_send:%d", point_cloud[i]);
     }
     printf("\n");
-    if (send(client_sockfd, point_cloud, 30000, 0) < 0)
+
+    int msg_len[1] = {points_num * 4 + 8};
+    send_cloud = new int[points_num];
+    for (int i = 0; i < points_num + 2; i++)
+    {
+      send_cloud[i] = point_cloud[i];
+    }
+    if (send(client_sockfd, msg_len, 4, 0) < 0)
+    {
+      perror("send");
+    }
+    printf("msg:%d\n", msg_len[0]);
+    if (send(client_sockfd, send_cloud, msg_len[0], 0) < 0)
     {
       perror("send");
     }
 
     //robot2
-    rsize = recv(client_sockfd2, buf2, 10000, 0);
+    rsize = recv(client_sockfd2, buf2, joint_msg_len, 0);
 
     if (rsize == 0)
     {
@@ -279,16 +293,27 @@ int main(int argc, char **argv)
       write(client_sockfd, buf, rsize);*/
     }
     //point_cloud2
-    printf("pc_num:%d\n", points_num);
+    printf("pc_num2:%d\n", points_num);
     for (int i = 0; i < 5; i++)
     {
       printf("pc_send2:%d", point_cloud[i]);
     }
     printf("\n");
-    if (send(client_sockfd2, point_cloud, 30000, 0) < 0)
+
+    for (int i = 0; i < points_num + 2; i++)
+    {
+      send_cloud[i] = point_cloud[i];
+    }
+    if (send(client_sockfd, msg_len, 4, 0) < 0)
     {
       perror("send");
     }
+
+    if (send(client_sockfd2, send_cloud, msg_len[0], 0) < 0)
+    {
+      perror("send");
+    }
+    delete[] send_cloud;
   }
 
   // ソケットクローズ

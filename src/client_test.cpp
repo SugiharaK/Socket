@@ -11,6 +11,7 @@
 
 int joints_num = 9;
 double target_joints[9];
+int msg_len = 9 * 8;
 sensor_msgs::JointState target;
 
 void Callback(const sensor_msgs::JointState::ConstPtr &msg)
@@ -59,7 +60,7 @@ int main(int argc, char **argv)
     ros::spinOnce();
     for (int i = 0; i < joints_num; i++)
       printf("send:%f\n", target_joints[i]);
-    if (send(sockfd, target_joints, 10000, 0) < 0)
+    if (send(sockfd, target_joints, msg_len, 0) < 0)
     {
       perror("send");
     }

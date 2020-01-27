@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 
   //initialaize
   std::cout << __LINE__ << std::endl;
-  int buf[1000000];
+  int buf[100000];
   std::cout << __LINE__ << std::endl;
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
