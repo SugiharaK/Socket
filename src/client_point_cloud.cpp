@@ -80,7 +80,11 @@ int main(int argc, char **argv)
   std::cout << __LINE__ << std::endl;
   while (ros::ok())
   {
-    rsize = recv(sockfd, buf, 30000, 0);
+    int msg_len[1];
+    recv(sockfd, msg_len, 4, 0);
+    printf("msg:%d\n", msg_len[0]);
+    rsize = recv(sockfd, buf, msg_len[0], 0);
+    sleep(0.2);
 
     if (rsize == 0)
     {

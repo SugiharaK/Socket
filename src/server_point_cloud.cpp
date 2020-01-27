@@ -16,6 +16,7 @@ sensor_msgs::PointCloud2 pc;
 int point_cloud[100000];
 int points_num;
 int width;
+int *send_cloud;
 
 void Callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
@@ -56,10 +57,10 @@ int main(int argc, char **argv)
   socklen_t len = sizeof(struct sockaddr_in);
   struct sockaddr_in from_addr;
   std::cout << __LINE__ << std::endl;
-  int buf[1000000];
+  //int buf[1000000];
   std::cout << __LINE__ << std::endl;
   // 受信バッファ初期化
-  memset(buf, 0, sizeof(buf));
+  //memset(buf, 0, sizeof(buf));
 
   // ソケット生成
   if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -99,11 +100,23 @@ int main(int argc, char **argv)
       printf("send:%d", point_cloud[i]);
     }
     printf("\n");
-    int msg_len = points_num * 2;
-    if (send(client_sockfd, point_cloud, 30000, 0) < 0)
+    int msg_len[1] = {points_num * 4 + 8};
+
+    send_cloud = new int[points_num];
+    for (int i = 0; i < points_num + 2; i++)
+    {
+      send_cloud[i] = point_cloud[i];
+    }
+    if (send(client_sockfd, msg_len, 4, 0) < 0)
     {
       perror("send");
     }
+    printf("msg:%d\n", msg_len[0]);
+    if (send(client_sockfd, send_cloud, msg_len[0], 0) < 0)
+    {
+      perror("send");
+    }
+    sleep(0.2);
     /* else
     {
       recv(sockfd, receive_str, 1000000000, 0);
