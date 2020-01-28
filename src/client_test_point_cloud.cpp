@@ -13,7 +13,7 @@
 
 int joint_num = 6;
 int finger_num = 3;
-int joints_num = 9;
+int joint_sum = 9;
 double target_joints[9];
 int joint_msg_len = 9 * 8;
 int msg_len[1];
@@ -22,7 +22,7 @@ sensor_msgs::JointState target;
 void Callback(const sensor_msgs::JointState::ConstPtr &msg)
 {
   target = *msg;
-  for (int i = 0; i < joints_num; i++)
+  for (int i = 0; i < joint_num; i++)
   {
     target_joints[i] = target.position[i + finger_num];
   }
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 
   //initialaize
   std::cout << __LINE__ << std::endl;
-  int buf[100000];
+  int buf[1000000];
   std::cout << __LINE__ << std::endl;
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
@@ -103,18 +103,19 @@ int main(int argc, char **argv)
   point_cloud.is_dense = 1;
 
   std::cout << __LINE__ << std::endl;
+  ros::Rate rate(2);
   while (ros::ok())
   {
     //joint
     ros::spinOnce();
-    for (int i = 0; i < joints_num; i++)
+    for (int i = 0; i < joint_sum; i++)
       printf("send:%f\n", target_joints[i]);
     if (send(sockfd, target_joints, joint_msg_len, 0) < 0)
     {
       perror("send");
     }
     //point_cloud
-
+    //sleep(1);
     recv(sockfd, msg_len, 4, 0);
     printf("msg:%d\n", msg_len[0]);
     rsize = recv(sockfd, buf, msg_len[0], 0);
@@ -135,7 +136,9 @@ int main(int argc, char **argv)
       printf("size:%d\n", bufsize);
       for (int i = 2; i < bufsize + 2; i++)
       {
+        //printf("%d ",i);
         point_cloud.data.push_back(buf[i]);
+        sleep(0.0008);
         //printf("receive:%d\n", buf[i]);
       }
       printf("receive:%d\n", buf[1]);
@@ -153,6 +156,7 @@ int main(int argc, char **argv)
       printf("\n");
       write(client_sockfd, buf, 1000000000);*/
     }
+    //rate.sleep();
   }
 
   // ソケットクローズ

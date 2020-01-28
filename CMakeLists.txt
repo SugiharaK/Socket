@@ -51,3 +51,6 @@ target_link_libraries(server_twin_point_cloud ${catkin_LIBRARIES})
 
 add_executable(client_test_point_cloud  src/client_test_point_cloud.cpp)
 target_link_libraries(client_test_point_cloud  ${catkin_LIBRARIES})
+
+add_executable(server_test_point_cloud src/server_test_point_cloud.cpp)
+target_link_libraries(server_test_point_cloud ${catkin_LIBRARIES})

@@ -100,12 +100,12 @@ int main(int argc, char **argv)
   {
     perror("accept");
   }
-  std::cout << "accept1" << std::endl;
+  /*std::cout << "accept1" << std::endl;
   if ((client_sockfd2 = accept(sockfd, (struct sockaddr *)&from_addr, &len)) < 0)
   {
     perror("accept");
   }
-  std::cout << "accept2" << std::endl;
+  std::cout << "accept2" << std::endl;*/
 
   // 受信
   int rsize;
@@ -257,9 +257,10 @@ int main(int argc, char **argv)
     {
       perror("send");
     }
+    //sleep(0.001 * points_num);
 
     //robot2
-    rsize = recv(client_sockfd2, buf2, 8000, 0);
+    /*rsize = recv(client_sockfd2, buf2, 8000, 0);
 
     if (rsize == 0)
     {
@@ -293,9 +294,9 @@ int main(int argc, char **argv)
         printf("send:%f\n", buf[i]);
       }
       write(client_sockfd, buf, rsize);*/
-    }
+    /*}
     //point_cloud2
-    printf("pc_num2:%d\n", points_num);
+    /*printf("pc_num2:%d\n", points_num);
     for (int i = 0; i < 5; i++)
     {
       printf("pc_send2:%d", point_cloud[i]);
@@ -314,7 +315,7 @@ int main(int argc, char **argv)
     if (send(client_sockfd2, send_cloud, msg_len[0], 0) < 0)
     {
       perror("send");
-    }
+    }*/
     delete[] send_cloud;
     //rate.sleep();
   }

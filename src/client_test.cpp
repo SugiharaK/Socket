@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     ros::spinOnce();
     for (int i = 0; i < joints_num; i++)
       printf("send:%f\n", target_joints[i]);
-    if (send(sockfd, target_joints, msg_len, 0) < 0)
+    if (send(sockfd, target_joints, 8000, 0) < 0)
     {
       perror("send");
     }

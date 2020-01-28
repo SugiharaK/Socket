@@ -35,7 +35,7 @@ int main(int argc, char **argv)
   socklen_t len = sizeof(struct sockaddr_in);
   struct sockaddr_in from_addr;
 
-  double buf[9];
+  double buf[8000];
   int msg_len = 9 * 8;
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
 */
   while (ros::ok())
   {
-    rsize = recv(client_sockfd, buf, msg_len, 0);
+    rsize = recv(client_sockfd, buf, 8000, 0);
 
     if (rsize == 0)
     {
