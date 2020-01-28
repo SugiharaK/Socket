@@ -48,7 +48,8 @@ int main(int argc, char **argv)
   //initialaize
   std::cout << __LINE__ << std::endl;
   int buf[100000];
-  std::cout << __LINE__ << std::endl;
+  int msg_len;
+
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
 
@@ -80,11 +81,11 @@ int main(int argc, char **argv)
   std::cout << __LINE__ << std::endl;
   while (ros::ok())
   {
-    int msg_len[1];
-    recv(sockfd, msg_len, 4, 0);
-    printf("msg:%d\n", msg_len[0]);
-    rsize = recv(sockfd, buf, msg_len[0], 0);
-    sleep(0.2);
+
+    recv(sockfd, &msg_len, 4, 0);
+    printf("msg:%d\n", msg_len);
+    rsize = recv(sockfd, buf, msg_len, 0);
+    //sleep(0.2);
 
     if (rsize == 0)
     {

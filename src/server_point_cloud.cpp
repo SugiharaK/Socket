@@ -38,6 +38,7 @@ int main(int argc, char **argv)
 {
   int joint_num = 6;
   int finger_joint_num = 3;
+  int msg_len;
 
   ros::init(argc, argv, "pointcloud_server");
   ros::NodeHandle n;
@@ -100,24 +101,24 @@ int main(int argc, char **argv)
       printf("send:%d", point_cloud[i]);
     }
     printf("\n");
-    int msg_len[1] = {points_num * 4 + 8};
+    msg_len = {points_num * 4 + 8};
 
     send_cloud = new int[points_num];
     for (int i = 0; i < points_num + 2; i++)
     {
       send_cloud[i] = point_cloud[i];
     }
-    if (send(client_sockfd, msg_len, 4, 0) < 0)
+    if (send(client_sockfd, &msg_len, 4, 0) < 0) //
     {
       perror("send");
     }
-    printf("msg:%d\n", msg_len[0]);
-    if (send(client_sockfd, send_cloud, msg_len[0], 0) < 0)
+    printf("msg:%d\n", msg_len);
+    if (send(client_sockfd, send_cloud, msg_len, 0) < 0)
     {
       perror("send");
     }
-    delete[] msg_len;
-    sleep(0.2);
+    delete[] send_cloud;
+    //sleep(0.2);
     /* else
     {
       recv(sockfd, receive_str, 1000000000, 0);

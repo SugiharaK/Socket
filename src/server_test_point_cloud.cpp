@@ -39,6 +39,7 @@ int main(int argc, char **argv)
 {
   int joint_num = 6;
   int finger_joint_num = 3;
+  int msg_len;
 
   ros::init(argc, argv, "joint_and_pointcloud_server");
   ros::NodeHandle n;
@@ -66,7 +67,7 @@ int main(int argc, char **argv)
   struct sockaddr_in from_addr;
 
   double buf[9];
-  double buf2[8000];
+  double buf2[9];
   int joint_msg_len = 9 * 8;
 
   // 受信バッファ初期化
@@ -242,18 +243,18 @@ int main(int argc, char **argv)
     }
     printf("\n");
 
-    int msg_len[1] = {points_num * 4 + 8};
+    msg_len = {points_num * 4 + 8};
     send_cloud = new int[points_num];
     for (int i = 0; i < points_num + 2; i++)
     {
       send_cloud[i] = point_cloud[i];
     }
-    if (send(client_sockfd, msg_len, 4, 0) < 0)
+    if (send(client_sockfd, &msg_len, 4, 0) < 0)
     {
       perror("send");
     }
-    printf("msg:%d\n", msg_len[0]);
-    if (send(client_sockfd, send_cloud, msg_len[0], 0) < 0)
+    printf("msg_len:%d\n", msg_len);
+    if (send(client_sockfd, send_cloud, msg_len, 0) < 0)
     {
       perror("send");
     }

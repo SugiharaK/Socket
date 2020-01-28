@@ -16,7 +16,7 @@ int finger_num = 3;
 int joint_sum = 9;
 double target_joints[9];
 int joint_msg_len = 9 * 8;
-int msg_len[1];
+int msg_len;
 sensor_msgs::JointState target;
 
 void Callback(const sensor_msgs::JointState::ConstPtr &msg)
@@ -116,9 +116,9 @@ int main(int argc, char **argv)
     }
     //point_cloud
     //sleep(1);
-    recv(sockfd, msg_len, 4, 0);
-    printf("msg:%d\n", msg_len[0]);
-    rsize = recv(sockfd, buf, msg_len[0], 0);
+    recv(sockfd, &msg_len, 4, 0);
+    printf("msg_len:%d\n", msg_len);
+    rsize = recv(sockfd, buf, msg_len, 0);
 
     if (rsize == 0)
     {
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
       {
         //printf("%d ",i);
         point_cloud.data.push_back(buf[i]);
-        sleep(0.0008);
+        //sleep(0.0008);
         //printf("receive:%d\n", buf[i]);
       }
       printf("receive:%d\n", buf[1]);
