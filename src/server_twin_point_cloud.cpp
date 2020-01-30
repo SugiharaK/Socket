@@ -14,23 +14,24 @@
 #include "sensor_msgs/PointField.h"
 
 sensor_msgs::PointCloud2 pc;
-int point_cloud[100000];
+uint8_t point_cloud[100000];
 int points_num;
 int width;
-int *send_cloud;
+uint8_t *send_cloud;
+int msg_len[2];
 
 void Callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
   pc = *msg;
   points_num = pc.row_step;
   width = pc.width;
-  point_cloud[0] = points_num;
-  point_cloud[1] = width;
-  for (int i = 2; i < points_num + 2; i++)
+  msg_len[0] = points_num;
+  msg_len[1] = width;
+  for (int i = 0; i < points_num; i++)
   {
-    point_cloud[i] = pc.data[i - 2];
+    point_cloud[i] = pc.data[i];
   }
-  printf("callback:%d\n", point_cloud[1]);
+  printf("callback:%d\n", msg_len[0]);
   //for (int i = 0; i < joints_num; i++)
   //std::cout << target_joints[i] << std::endl;
 }
@@ -66,7 +67,7 @@ int main(int argc, char **argv)
   struct sockaddr_in from_addr;
 
   double buf[9];
-  double buf2[8000];
+  double buf2[9];
   int joint_msg_len = 9 * 8;
 
   // 受信バッファ初期化
@@ -233,6 +234,7 @@ int main(int argc, char **argv)
       }
       write(client_sockfd, buf, rsize);*/
     }
+    sleep(0.2);
     //point_cloud1
 
     printf("pc_num:%d\n", points_num);
@@ -242,24 +244,26 @@ int main(int argc, char **argv)
     }
     printf("\n");
 
-    int msg_len[1] = {points_num * 4 + 8};
-    send_cloud = new int[points_num];
-    for (int i = 0; i < points_num + 2; i++)
+    //msg_len[2] = {points_num * 4 + 8};
+    send_cloud = new uint8_t[points_num];
+    for (int i = 0; i < points_num; i++)
     {
       send_cloud[i] = point_cloud[i];
     }
-    if (send(client_sockfd, msg_len, 4, 0) < 0)
+    if (send(client_sockfd, msg_len, 8, 0) < 0)
     {
       perror("send");
     }
-    printf("msg:%d\n", msg_len[0]);
+    printf("msg_len:%d\n", msg_len[0]);
     if (send(client_sockfd, send_cloud, msg_len[0], 0) < 0)
     {
       perror("send");
     }
+    //sleep(0.001 * points_num);
+    delete[] send_cloud;
 
     //robot2
-    rsize = recv(client_sockfd2, buf2, 8000, 0);
+    rsize = recv(client_sockfd2, buf2, joint_msg_len, 0);
 
     if (rsize == 0)
     {
@@ -294,6 +298,7 @@ int main(int argc, char **argv)
       }
       write(client_sockfd, buf, rsize);*/
     }
+    sleep(0.2);
     //point_cloud2
     printf("pc_num2:%d\n", points_num);
     for (int i = 0; i < 5; i++)
@@ -301,16 +306,16 @@ int main(int argc, char **argv)
       printf("pc_send2:%d", point_cloud[i]);
     }
     printf("\n");
-
-    for (int i = 0; i < points_num + 2; i++)
+    send_cloud = new uint8_t[points_num];
+    for (int i = 0; i < points_num; i++)
     {
       send_cloud[i] = point_cloud[i];
     }
-    if (send(client_sockfd, msg_len, 4, 0) < 0)
+    if (send(client_sockfd, msg_len, 8, 0) < 0)
     {
       perror("send");
     }
-
+    printf("msg_len2:%d\n", msg_len[0]);
     if (send(client_sockfd2, send_cloud, msg_len[0], 0) < 0)
     {
       perror("send");
