@@ -14,23 +14,24 @@
 #include "sensor_msgs/PointField.h"
 
 sensor_msgs::PointCloud2 pc;
-int point_cloud[100000];
+uint8_t point_cloud[100000];
 int points_num;
 int width;
-int *send_cloud;
+uint8_t *send_cloud;
+int msg_len[2];
 
 void Callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
   pc = *msg;
   points_num = pc.row_step;
   width = pc.width;
-  point_cloud[0] = points_num;
-  point_cloud[1] = width;
-  for (int i = 2; i < points_num + 2; i++)
+  msg_len[0] = points_num;
+  msg_len[1] = width;
+  for (int i = 0; i < points_num; i++)
   {
-    point_cloud[i] = pc.data[i - 2];
+    point_cloud[i] = pc.data[i];
   }
-  printf("callback:%d\n", point_cloud[1]);
+  printf("callback:%d\n", msg_len[0]);
   //for (int i = 0; i < joints_num; i++)
   //std::cout << target_joints[i] << std::endl;
 }
@@ -39,7 +40,6 @@ int main(int argc, char **argv)
 {
   int joint_num = 6;
   int finger_joint_num = 3;
-  int msg_len;
 
   ros::init(argc, argv, "joint_and_pointcloud_server");
   ros::NodeHandle n;
@@ -244,18 +244,18 @@ int main(int argc, char **argv)
     }
     printf("\n");
 
-    msg_len = {points_num * 4 + 8};
-    send_cloud = new int[points_num];
-    for (int i = 0; i < points_num + 2; i++)
+    //msg_len[2] = {points_num * 4 + 8};
+    send_cloud = new uint8_t[points_num];
+    for (int i = 0; i < points_num; i++)
     {
       send_cloud[i] = point_cloud[i];
     }
-    if (send(client_sockfd, &msg_len, 4, 0) < 0)
+    if (send(client_sockfd, msg_len, 8, 0) < 0)
     {
       perror("send");
     }
-    printf("msg_len:%d\n", msg_len);
-    if (send(client_sockfd, send_cloud, msg_len, 0) < 0)
+    printf("msg_len:%d\n", msg_len[0]);
+    if (send(client_sockfd, send_cloud, msg_len[0], 0) < 0)
     {
       perror("send");
     }
