@@ -16,7 +16,7 @@ int finger_num = 3;
 int joint_sum = 9;
 double target_joints[9];
 int joint_msg_len = 9 * 8;
-int msg_len;
+int msg_len[2];
 sensor_msgs::JointState target;
 
 void Callback(const sensor_msgs::JointState::ConstPtr &msg)
@@ -72,8 +72,8 @@ int main(int argc, char **argv)
 
   //initialaize
   std::cout << __LINE__ << std::endl;
-  int buf[1000000];
-  int marge_buf[100000];
+  uint8_t buf[1000000];
+  uint8_t marge_buf[100000];
   std::cout << __LINE__ << std::endl;
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
@@ -118,12 +118,12 @@ int main(int argc, char **argv)
     }
     //point_cloud
     //sleep(1);
-    recv(sockfd, &msg_len, 4, 0);
-    printf("msg_len:%d\n", msg_len);
+    recv(sockfd, msg_len, 8, 0);
+    printf("msg_len:%d\n", msg_len[0]);
     int recvd_buf = 0;
-    while (recvd_buf < msg_len)
+    while (recvd_buf < msg_len[0])
     {
-      rsize = recv(sockfd, buf, msg_len, 0);
+      rsize = recv(sockfd, buf, msg_len[0], 0);
       memmove(marge_buf + recvd_buf, buf, rsize);
       recvd_buf += rsize;
       std::cout << "receved_buf_length:" << recvd_buf << std::endl;
@@ -138,15 +138,18 @@ int main(int argc, char **argv)
     }
 
     sleep(0.2);
-
-    //else
+    if (rsize == 0)
+    {
+      break;
+    }
+    else
     {
       //point_cloud.data = init_cloud.data;
       point_cloud.data.clear();
-      int bufsize = marge_buf[0];
-      int width = marge_buf[1];
+      int bufsize = msg_len[0];
+      int width = msg_len[1];
       printf("size:%d\n", bufsize);
-      for (int i = 2; i < bufsize + 2; i++)
+      for (int i = 0; i < bufsize; i++)
       {
         //printf("%d ",i);
         point_cloud.data.push_back(marge_buf[i]);
