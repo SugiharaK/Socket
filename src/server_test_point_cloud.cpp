@@ -234,6 +234,7 @@ int main(int argc, char **argv)
       }
       write(client_sockfd, buf, rsize);*/
     }
+    sleep(0.2);
     //point_cloud1
 
     printf("pc_num:%d\n", points_num);

@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     recv(sockfd, &msg_len, 4, 0);
     printf("msg:%d\n", msg_len);
     rsize = recv(sockfd, buf, msg_len, 0);
-    //sleep(0.2);
+    sleep(0.2);
 
     if (rsize == 0)
     {

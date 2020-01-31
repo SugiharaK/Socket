@@ -73,9 +73,11 @@ int main(int argc, char **argv)
   //initialaize
   std::cout << __LINE__ << std::endl;
   int buf[1000000];
+  int marge_buf[100000];
   std::cout << __LINE__ << std::endl;
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
+  memset(marge_buf, 0, sizeof(marge_buf));
 
   /**/ point_cloud.fields.push_back(init_field);
   point_cloud.fields.push_back(init_field);
@@ -118,30 +120,40 @@ int main(int argc, char **argv)
     //sleep(1);
     recv(sockfd, &msg_len, 4, 0);
     printf("msg_len:%d\n", msg_len);
-    rsize = recv(sockfd, buf, msg_len, 0);
+    int recvd_buf = 0;
+    while (recvd_buf < msg_len)
+    {
+      rsize = recv(sockfd, buf, msg_len, 0);
+      memmove(marge_buf + recvd_buf, buf, rsize);
+      recvd_buf += rsize;
+      std::cout << "receved_buf_length:" << recvd_buf << std::endl;
+      if (rsize == 0)
+      {
+        break;
+      }
+      else if (rsize == -1)
+      {
+        perror("recv");
+      }
+    }
 
-    if (rsize == 0)
+    sleep(0.2);
+
+    //else
     {
-      break;
-    }
-    else if (rsize == -1)
-    {
-      perror("recv");
-    }
-    else
-    {
-      point_cloud.data = init_cloud.data;
-      int bufsize = buf[0];
-      int width = buf[1];
+      //point_cloud.data = init_cloud.data;
+      point_cloud.data.clear();
+      int bufsize = marge_buf[0];
+      int width = marge_buf[1];
       printf("size:%d\n", bufsize);
       for (int i = 2; i < bufsize + 2; i++)
       {
         //printf("%d ",i);
-        point_cloud.data.push_back(buf[i]);
+        point_cloud.data.push_back(marge_buf[i]);
         //sleep(0.0008);
         //printf("receive:%d\n", buf[i]);
       }
-      printf("receive:%d\n", buf[1]);
+      printf("receive:%d\n", marge_buf[1]);
       point_cloud.header.stamp = ros::Time::now();
       point_cloud.row_step = bufsize;
       point_cloud.width = width;
