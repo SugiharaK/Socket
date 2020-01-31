@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     printf("\n");
     msg_len = {points_num * 4 + 8};
 
-    send_cloud = new int[points_num];
+    send_cloud = new int[points_num + 2];
     for (int i = 0; i < points_num + 2; i++)
     {
       send_cloud[i] = point_cloud[i];
