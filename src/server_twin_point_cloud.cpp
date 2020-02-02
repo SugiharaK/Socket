@@ -101,12 +101,12 @@ int main(int argc, char **argv)
   {
     perror("accept");
   }
-  std::cout << "accept1" << std::endl;
+  std::cout << "accept1" << client_sockfd << std::endl;
   if ((client_sockfd2 = accept(sockfd, (struct sockaddr *)&from_addr, &len)) < 0)
   {
     perror("accept");
   }
-  std::cout << "accept2" << std::endl;
+  std::cout << "accept2" << client_sockfd2 << std::endl;
 
   // 受信
   int rsize;
@@ -227,14 +227,8 @@ int main(int argc, char **argv)
       fpub.publish(finger_target);
       ros::spinOnce();
       //sleep(1);
-      // 応答
-      /*for (int i = 0; i < (joint_num + finger_joint_num); i++)
-      {
-        printf("send:%f\n", buf[i]);
-      }
-      write(client_sockfd, buf, rsize);*/
     }
-    sleep(0.2);
+    //sleep(0.2);
     //point_cloud1
 
     printf("pc_num:%d\n", points_num);
@@ -250,7 +244,7 @@ int main(int argc, char **argv)
     {
       send_cloud[i] = point_cloud[i];
     }
-    if (send(client_sockfd, msg_len, 8, 0) < 0)
+    if (send(client_sockfd, msg_len, sizeof(msg_len), 0) < 0)
     {
       perror("send");
     }
@@ -261,7 +255,6 @@ int main(int argc, char **argv)
     }
     //sleep(0.001 * points_num);
     delete[] send_cloud;
-
     //robot2
     rsize = recv(client_sockfd2, buf2, joint_msg_len, 0);
 
@@ -290,15 +283,8 @@ int main(int argc, char **argv)
       pub2.publish(target2);
       fpub2.publish(finger_target2);
       ros::spinOnce();
-
-      // 応答
-      /*for (int i = 0; i < (joint_num + finger_joint_num); i++)
-      {
-        printf("send:%f\n", buf[i]);
-      }
-      write(client_sockfd, buf, rsize);*/
     }
-    sleep(0.2);
+    //sleep(0.2);
     //point_cloud2
     printf("pc_num2:%d\n", points_num);
     for (int i = 0; i < 5; i++)
@@ -311,7 +297,7 @@ int main(int argc, char **argv)
     {
       send_cloud[i] = point_cloud[i];
     }
-    if (send(client_sockfd, msg_len, 8, 0) < 0)
+    if (send(client_sockfd2, msg_len, sizeof(msg_len), 0) < 0)
     {
       perror("send");
     }
