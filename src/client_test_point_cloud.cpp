@@ -118,12 +118,12 @@ int main(int argc, char **argv)
     }
     //point_cloud
     //sleep(1);
-    recv(sockfd, msg_len, 8, 0);
+    recv(sockfd, msg_len, sizeof(msg_len), 0);
     printf("msg_len:%d\n", msg_len[0]);
     int recvd_buf = 0;
     while (recvd_buf < msg_len[0])
     {
-      rsize = recv(sockfd, buf, msg_len[0], 0);
+      rsize = recv(sockfd, buf, msg_len[0]-recvd_buf, 0);
       memmove(marge_buf + recvd_buf, buf, rsize);
       recvd_buf += rsize;
       std::cout << "receved_buf_length:" << recvd_buf << std::endl;
@@ -137,7 +137,7 @@ int main(int argc, char **argv)
       }
     }
 
-    sleep(0.2);
+    //sleep(0.2);
     if (rsize == 0)
     {
       break;
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
         //sleep(0.0008);
         //printf("receive:%d\n", buf[i]);
       }
-      printf("receive:%d\n", marge_buf[1]);
+      printf("receive:%d\n", marge_buf[0]);
       point_cloud.header.stamp = ros::Time::now();
       point_cloud.row_step = bufsize;
       point_cloud.width = width;
