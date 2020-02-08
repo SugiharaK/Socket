@@ -58,7 +58,8 @@ int main(int argc, char **argv)
   // 送信先アドレス・ポート番号設定
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port);
-  addr.sin_addr.s_addr = inet_addr("192.168.0.89");
+  addr.sin_addr.s_addr = inet_addr("192.168.0.247");
+  //addr.sin_addr.s_addr = inet_addr("192.168.0.89");
   //addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
   // サーバ接続
@@ -123,7 +124,7 @@ int main(int argc, char **argv)
     int recvd_buf = 0;
     while (recvd_buf < msg_len[0])
     {
-      rsize = recv(sockfd, buf, msg_len[0]-recvd_buf, 0);
+      rsize = recv(sockfd, buf, msg_len[0] - recvd_buf, 0);
       memmove(marge_buf + recvd_buf, buf, rsize);
       recvd_buf += rsize;
       std::cout << "receved_buf_length:" << recvd_buf << std::endl;

@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-  <arg name="robot_name" default="robot2"/>
-  <arg name="port" default="1244"/>
-  <node pkg="Socket" type="server_test" name="server_test_robot2">
-    <param name="robot_name" value="$(arg robot_name)"/>
-    <param name="port" value="(arg port)"/>
-  </node>
-</launch>

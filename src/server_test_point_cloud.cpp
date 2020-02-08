@@ -45,13 +45,10 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   ros::AsyncSpinner spinner(1);
   spinner.start();
-  ros::Subscriber sub = n.subscribe("/downsampled_cloud", 1000, Callback);
-  ros::Publisher pubpc = n.advertise<sensor_msgs::PointCloud2>("/socket_pc", 10000);
 
-  std::string robot_name;
-  int port;
-  ros::param::param<std::string>("~robot_name", robot_name, "vs087");
-  ros::param::param<int>("~port", port, 1234);
+  std::string pc_src;
+  ros::param::param<std::string>("~pc_src", pc_src, "/filtered_cloud");
+  ros::Subscriber sub = n.subscribe(pc_src, 1000, Callback);
 
   //ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/twin/armR_controller/command", 1000);
   ros::Publisher pub = n.advertise<trajectory_msgs::JointTrajectory>("/vs087/arm_controller/command", 1000);

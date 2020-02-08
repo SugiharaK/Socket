@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="pc_src" default="/filterd_cloud"/>
+  <node pkg="Socket" type="server_twin_point_cloud" name="server_twin_point_cloud">
+    <param name="pc_src" value="$(arg pc_src)"/>
+  </node>
+</launch>

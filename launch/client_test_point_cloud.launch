@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="port" default="1234"/>
+  <node pkg="Socket" type="client_test_point_cloud" name="client_test_point_cloud">
+    <param name="port" value="1234"/>
+  </node>
+</launch>
