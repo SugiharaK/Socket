@@ -190,6 +190,7 @@ int main(int argc, char **argv)
   write(client_sockfd2, buf2, rsize);*/
   std::cout << "initial end" << std::endl;
   ros::Rate rate(2);
+  int buf_cloud[50000];
   //loop
   while (ros::ok())
   {
@@ -235,12 +236,16 @@ int main(int argc, char **argv)
     }
     printf("\n");
 
-    msg_len[0] = points_num = point_cloud[0];
-    msg_len[1] = width = point_cloud[1];
+    for (int i = 0; i < point_cloud[0] + 2; i++)
+    {
+      buf_cloud[i] = point_cloud[i];
+    }
+    msg_len[0] = points_num = buf_cloud[0];
+    msg_len[1] = width = buf_cloud[1];
     send_cloud = new uint8_t[points_num];
     for (int i = 0; i < points_num; i++)
     {
-      send_cloud[i] = point_cloud[i + 2];
+      send_cloud[i] = buf_cloud[i + 2];
     }
 
     if (send(client_sockfd, msg_len, sizeof(msg_len), 0) < 0)
@@ -291,10 +296,17 @@ int main(int argc, char **argv)
       printf("pc_send2:%d", point_cloud[i]);
     }
     printf("\n");
+
+    for (int i = 0; i < point_cloud[0] + 2; i++)
+    {
+      buf_cloud[i] = point_cloud[i];
+    }
+    msg_len[0] = points_num = buf_cloud[0];
+    msg_len[1] = width = buf_cloud[1];
     send_cloud = new uint8_t[points_num];
     for (int i = 0; i < points_num; i++)
     {
-      send_cloud[i] = point_cloud[i];
+      send_cloud[i] = buf_cloud[i + 2];
     }
     if (send(client_sockfd2, msg_len, sizeof(msg_len), 0) < 0)
     {
