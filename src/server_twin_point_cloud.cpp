@@ -14,7 +14,7 @@
 #include "sensor_msgs/PointField.h"
 
 sensor_msgs::PointCloud2 pc;
-uint8_t point_cloud[50000];
+int point_cloud[50000];
 int points_num;
 int width;
 uint8_t *send_cloud;
@@ -23,13 +23,12 @@ int msg_len[2];
 void Callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
   pc = *msg;
-  points_num = pc.row_step;
-  width = pc.width;
-  msg_len[0] = points_num;
-  msg_len[1] = width;
+  point_cloud[0] = pc.row_step; //points_num
+  point_cloud[1] = pc.width;    //width
+
   for (int i = 0; i < points_num; i++)
   {
-    point_cloud[i] = pc.data[i];
+    point_cloud[i + 2] = pc.data[i];
   }
   printf("callback:%d\n", msg_len[0]);
   //for (int i = 0; i < joints_num; i++)
@@ -193,7 +192,8 @@ int main(int argc, char **argv)
   ros::Rate rate(2);
   //loop
   while (ros::ok())
-  {ros::spinOnce();
+  {
+    ros::spinOnce();
     //robot1
     rsize = recv(client_sockfd, buf, joint_msg_len, 0);
 
@@ -235,12 +235,14 @@ int main(int argc, char **argv)
     }
     printf("\n");
 
-    //msg_len[2] = {points_num * 4 + 8};
+    msg_len[0] = points_num = point_cloud[0];
+    msg_len[1] = width = point_cloud[1];
     send_cloud = new uint8_t[points_num];
     for (int i = 0; i < points_num; i++)
     {
-      send_cloud[i] = point_cloud[i];
+      send_cloud[i] = point_cloud[i + 2];
     }
+
     if (send(client_sockfd, msg_len, sizeof(msg_len), 0) < 0)
     {
       perror("send");
