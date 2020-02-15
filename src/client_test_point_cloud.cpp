@@ -148,42 +148,42 @@ int main(int argc, char **argv)
           perror("recv");
         }
       }
-    }
 
-    //sleep(0.2);
-    if (rsize == 0)
-    {
-      break;
-    }
-    else
-    {
-      //point_cloud.data = init_cloud.data;
-      point_cloud.data.clear();
-      bufsize = msg_len[0];
-      width = msg_len[1];
-      printf("size:%d\n", bufsize);
-      for (int i = 0; i < bufsize; i++)
+      //sleep(0.2);
+      if (rsize == 0)
       {
-        //printf("%d ",i);
-        point_cloud.data.push_back(marge_buf[i]);
-        //sleep(0.0008);
-        //printf("receive:%d\n", buf[i]);
+        break;
       }
-      printf("receive:%d\n", marge_buf[0]);
-      point_cloud.header.stamp = ros::Time::now();
-      point_cloud.row_step = bufsize;
-      point_cloud.width = width;
-      pubpc.publish(point_cloud);
-      ros::spinOnce();
+      else
+      {
+        //point_cloud.data = init_cloud.data;
+        point_cloud.data.clear();
+        bufsize = msg_len[0];
+        width = msg_len[1];
+        printf("size:%d\n", bufsize);
+        for (int i = 0; i < bufsize; i++)
+        {
+          //printf("%d ",i);
+          point_cloud.data.push_back(marge_buf[i]);
+          //sleep(0.0008);
+          //printf("receive:%d\n", buf[i]);
+        }
+        printf("receive:%d\n", marge_buf[0]);
+        point_cloud.header.stamp = ros::Time::now();
+        point_cloud.row_step = bufsize;
+        point_cloud.width = width;
+        pubpc.publish(point_cloud);
 
-      // 応答
-      /* for (int i = 0; i < 5; i++)
+        // 応答
+        /* for (int i = 0; i < 5; i++)
       {
         printf("send:%d", buf[i]);
       }
       printf("\n");
       write(client_sockfd, buf, 1000000000);*/
+      }
     }
+    ros::spinOnce();
     //rate.sleep();
   }
 
