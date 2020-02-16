@@ -58,7 +58,8 @@ int main(int argc, char **argv)
   // 送信先アドレス・ポート番号設定
   addr.sin_family = AF_INET;
   addr.sin_port = htons(port);
-  addr.sin_addr.s_addr = inet_addr("192.168.0.247");
+  addr.sin_addr.s_addr = inet_addr("192.168.0.2");
+  //addr.sin_addr.s_addr = inet_addr("192.168.0.247");
   //addr.sin_addr.s_addr = inet_addr("192.168.0.89");
   //addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
