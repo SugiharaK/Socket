@@ -126,7 +126,7 @@ int main(int argc, char **argv)
     //sleep(1);
     recv(sockfd, msg_len, sizeof(msg_len), 0);
     printf("msg_len:%d\n", msg_len[0]);
-    if (msg_len > 50000)
+    if (msg_len[0] > 50000)
     {
       recv(sockfd, marge_buf, sizeof(marge_buf), 0);
     }
