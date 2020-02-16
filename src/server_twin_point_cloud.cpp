@@ -14,7 +14,7 @@
 #include "sensor_msgs/PointField.h"
 
 sensor_msgs::PointCloud2 pc;
-uint8_t point_cloud[100000];
+uint8_t point_cloud[50000];
 int points_num;
 int width;
 uint8_t *send_cloud;
@@ -193,7 +193,7 @@ int main(int argc, char **argv)
   ros::Rate rate(2);
   //loop
   while (ros::ok())
-  {
+  {ros::spinOnce();
     //robot1
     rsize = recv(client_sockfd, buf, joint_msg_len, 0);
 
@@ -222,7 +222,7 @@ int main(int argc, char **argv)
       finger_target.header.stamp = ros::Time::now();
       pub.publish(target);
       fpub.publish(finger_target);
-      ros::spinOnce();
+      //ros::spinOnce();
       //sleep(1);
     }
     //sleep(0.2);
@@ -279,7 +279,7 @@ int main(int argc, char **argv)
       finger_target2.header.stamp = ros::Time::now();
       pub2.publish(target2);
       fpub2.publish(finger_target2);
-      ros::spinOnce();
+      //ros::spinOnce();
     }
     //sleep(0.2);
     //point_cloud2

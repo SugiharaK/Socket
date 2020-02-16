@@ -73,8 +73,8 @@ int main(int argc, char **argv)
 
   //initialaize
   std::cout << __LINE__ << std::endl;
-  uint8_t buf[1000000];
-  uint8_t marge_buf[100000];
+  uint8_t buf[50000];
+  uint8_t marge_buf[50000];
   std::cout << __LINE__ << std::endl;
   // 受信バッファ初期化
   memset(buf, 0, sizeof(buf));
@@ -107,6 +107,11 @@ int main(int argc, char **argv)
 
   std::cout << __LINE__ << std::endl;
   ros::Rate rate(2);
+
+  int recvd_buf;
+  int bufsize;
+  int width;
+
   while (ros::ok())
   {
     //joint
@@ -121,20 +126,27 @@ int main(int argc, char **argv)
     //sleep(1);
     recv(sockfd, msg_len, sizeof(msg_len), 0);
     printf("msg_len:%d\n", msg_len[0]);
-    int recvd_buf = 0;
-    while (recvd_buf < msg_len[0])
+    if (msg_len > 50000)
     {
-      rsize = recv(sockfd, buf, msg_len[0] - recvd_buf, 0);
-      memmove(marge_buf + recvd_buf, buf, rsize);
-      recvd_buf += rsize;
-      std::cout << "receved_buf_length:" << recvd_buf << std::endl;
-      if (rsize == 0)
+      recv(sockfd, marge_buf, sizeof(marge_buf), 0);
+    }
+    else
+    {
+      recvd_buf = 0;
+      while (recvd_buf < msg_len[0])
       {
-        break;
-      }
-      else if (rsize == -1)
-      {
-        perror("recv");
+        rsize = recv(sockfd, buf, msg_len[0] - recvd_buf, 0);
+        memmove(marge_buf + recvd_buf, buf, rsize);
+        recvd_buf += rsize;
+        std::cout << "receved_buf_length:" << recvd_buf << std::endl;
+        if (rsize == 0)
+        {
+          break;
+        }
+        else if (rsize == -1)
+        {
+          perror("recv");
+        }
       }
     }
 
@@ -147,8 +159,8 @@ int main(int argc, char **argv)
     {
       //point_cloud.data = init_cloud.data;
       point_cloud.data.clear();
-      int bufsize = msg_len[0];
-      int width = msg_len[1];
+      bufsize = msg_len[0];
+      width = msg_len[1];
       printf("size:%d\n", bufsize);
       for (int i = 0; i < bufsize; i++)
       {
