@@ -30,7 +30,7 @@ void Callback(const sensor_msgs::PointCloud2::ConstPtr &msg)
   {
     point_cloud[i + 2] = pc.data[i];
   }
-  printf("callback:%d\n", msg_len[0]);
+  printf("callback:%d\n", point_cloud[0]);
   //for (int i = 0; i < joints_num; i++)
   //std::cout << target_joints[i] << std::endl;
 }
